@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Platform Overview</h2>
+
+{% if overall %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ overall["total_tests"] }}</div>
+        <div class="stat-label">Total Tests</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ overall["passed"] }}</div>
+        <div class="stat-label">Passed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ overall["failed"] }}</div>
+        <div class="stat-label">Failed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ overall["detection_rate"] }}%</div>
+        <div class="stat-label">Detection Rate</div>
+    </div>
+</div>
+
+<h3>Last Run</h3>
+<p>{{ overall["run_at"] }}</p>
+
+{% else %}
+<p>No data yet. Run main.py first.</p>
+{% endif %}
+
+<h3>Rule Performance</h3>
+
+{% if rule_metrics %}
+<table border="1">
+    <tr>
+        <th>Rule ID</th>
+        <th>Title</th>
+        <th>Total Tests</th>
+        <th>Passed</th>
+        <th>Failed</th>
+        <th>Detection Rate</th>
+    </tr>
+    {% for rm in rule_metrics %}
+    <tr>
+        <td>{{ rm["rule_id"] }}</td>
+        <td>{{ rm["title"] }}</td>
+        <td>{{ rm["total_tests"] }}</td>
+        <td>{{ rm["passed"] }}</td>
+        <td>{{ rm["failed"] }}</td>
+        <td>{{ rm["detection_rate"] }}%</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

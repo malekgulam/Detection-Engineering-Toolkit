@@ -1,0 +1,12 @@
+{
+    "rule_id": "T1110-001",
+    "title": "SSH Brute Force",
+    "technique": "T1110",
+    "tactic": "Credential Access",
+    "severity": "HIGH",
+    "event_type": "failed_login",
+    "threshold": 5,
+    "time_window_seconds": 60,
+    "cooldown_seconds": 300,
+    "description": "Detects multiple failed login attempts from same IP within time window"
+}

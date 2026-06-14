@@ -1,0 +1,9 @@
+{
+    "rule_id": "T1136-001",
+    "title": "Suspicious Account Creation",
+    "technique": "T1136",
+    "tactic": "Persistence",
+    "severity": "HIGH",
+    "event_type": "user_creation",
+    "description": "Detects creation of new user accounts"
+}

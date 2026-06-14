@@ -1,0 +1,182 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0d1117;
+    color: #c9d1d9;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+
+.sidebar {
+    width: 220px;
+    background-color: #161b22;
+    border-right: 1px solid #30363d;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+}
+
+.sidebar-title {
+    color: #58a6ff;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 0 20px 20px 20px;
+    border-bottom: 1px solid #30363d;
+    line-height: 1.4;
+}
+
+.sidebar-links {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+}
+
+.sidebar-links a {
+    color: #8b949e;
+    text-decoration: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-links a:hover {
+    color: #c9d1d9;
+    background-color: #21262d;
+    border-left: 3px solid #58a6ff;
+}
+
+.sidebar-links a.active {
+    color: #58a6ff;
+    background-color: #21262d;
+    border-left: 3px solid #58a6ff;
+}
+
+/* ── Main Content ── */
+
+.main {
+    margin-left: 220px;
+    padding: 30px;
+    width: 100%;
+}
+
+h2 {
+    color: #58a6ff;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+h3 {
+    color: #8b949e;
+    margin: 25px 0 12px 0;
+    font-size: 15px;
+}
+
+p {
+    color: #8b949e;
+    font-size: 14px;
+}
+
+/* ── Stat Cards ── */
+
+.stats-grid {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px 25px;
+    text-align: center;
+    min-width: 130px;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #58a6ff;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #8b949e;
+    margin-top: 5px;
+}
+
+/* ── Tables ── */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+table th {
+    background-color: #161b22;
+    color: #58a6ff;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #30363d;
+}
+
+table td {
+    padding: 10px 12px;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+}
+
+table tr:hover {
+    background-color: #161b22;
+}
+
+/* ── Badges ── */
+
+.badge {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge.HIGH     { background-color: #ff000033; color: #ff6b6b; }
+.badge.MEDIUM   { background-color: #ff990033; color: #ffaa00; }
+.badge.LOW      { background-color: #00ff0033; color: #56d364; }
+.badge.CRITICAL { background-color: #ff000066; color: #ff0000; }
+
+.badge.PASS     { background-color: #00ff0033; color: #56d364; }
+.badge.FAIL     { background-color: #ff000033; color: #ff6b6b; }
+.badge.FP       { background-color: #ff990033; color: #ffaa00; }
+
+/* ── Charts ── */
+
+.chart-box {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-top: 25px;
+    display: inline-block;
+}
+
+.chart-box.small {
+    width: 320px;
+    height: 280px;
+}
+
+.chart-box.medium {
+    width: 520px;
+    height: 280px;
+}

@@ -1,0 +1,13 @@
+{
+    "rule_id": "T1595-001",
+    "title": "Web Scanning Activity",
+    "technique": "T1595",
+    "tactic": "Reconnaissance",
+    "severity": "MEDIUM",
+    "event_type": "web_request",
+    "status": "404",
+    "threshold": 10,
+    "time_window_seconds": 30,
+    "cooldown_seconds": 300,
+    "description": "Detects rapid 404 requests from same IP indicating web scanning"
+}

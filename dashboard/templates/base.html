@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Detection Engineering Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-title">Detection Engineering<br>Platform</div>
+        <div class="sidebar-links">
+            <a href="/"          {% if request.path == "/"           %}class="active"{% endif %}>Overview</a>
+            <a href="/rules"     {% if request.path == "/rules"      %}class="active"{% endif %}>Rules</a>
+            <a href="/validation"{% if request.path == "/validation" %}class="active"{% endif %}>Validation</a>
+            <a href="/coverage"  {% if request.path == "/coverage"   %}class="active"{% endif %}>Coverage</a>
+            <a href="/metrics"   {% if request.path == "/metrics"    %}class="active"{% endif %}>Metrics</a>
+        </div>
+    </div>
+
+    <div class="main">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+</body>
+</html>

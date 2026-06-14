@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>ATT&CK Coverage</h2>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ covered_count }}</div>
+        <div class="stat-label">Techniques Covered</div>
+    </div>
+</div>
+
+<h3>Covered Techniques</h3>
+
+<table border="1">
+    <tr>
+        <th>Technique ID</th>
+        <th>Technique Name</th>
+        <th>Tactic</th>
+        <th>Rule ID</th>
+        <th>Rule Title</th>
+        <th>Severity</th>
+    </tr>
+    {% for item in coverage_data %}
+    <tr>
+        <td>{{ item["technique_id"] }}</td>
+        <td>{{ item["technique_name"] }}</td>
+        <td>{{ item["tactic"] }}</td>
+        <td>{{ item["rule_id"] }}</td>
+        <td>{{ item["title"] }}</td>
+        <td><span class="badge {{ item['severity'] }}">{{ item["severity"] }}</span></td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

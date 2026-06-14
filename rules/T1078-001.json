@@ -1,0 +1,10 @@
+{
+    "rule_id": "T1078-001",
+    "title": "Off Hours Login",
+    "technique": "T1078",
+    "tactic": "Defense Evasion",
+    "severity": "MEDIUM",
+    "event_type": "successful_login",
+    "time_condition": "00:00-05:00",
+    "description": "Detects successful logins during off hours window"
+}

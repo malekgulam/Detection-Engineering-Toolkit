@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Detection Metrics</h2>
+
+{% if overall %}
+<h3>Overall Performance</h3>
+<table border="1">
+    <tr><td>Total Tests</td><td>{{ overall["total_tests"] }}</td></tr>
+    <tr><td>Passed</td><td>{{ overall["passed"] }}</td></tr>
+    <tr><td>Failed</td><td>{{ overall["failed"] }}</td></tr>
+    <tr><td>False Positives</td><td>{{ overall["fp"] }}</td></tr>
+    <tr><td>Detection Rate</td><td>{{ overall["detection_rate"] }}%</td></tr>
+    <tr><td>FP Rate</td><td>{{ overall["fp_rate"] }}%</td></tr>
+    <tr><td>Last Run</td><td>{{ overall["run_at"] }}</td></tr>
+</table>
+{% endif %}
+
+<h3>Per Rule Breakdown</h3>
+
+<table id="metricsTable" border="1">
+    <tr>
+        <th>Rule ID</th>
+        <th>Title</th>
+        <th>Total Tests</th>
+        <th>Passed</th>
+        <th>Failed</th>
+        <th>False Positives</th>
+        <th>Detection Rate</th>
+        <th>FP Rate</th>
+    </tr>
+    {% for rm in rule_metrics %}
+    <tr>
+        <td>{{ rm["rule_id"] }}</td>
+        <td>{{ rm["title"] }}</td>
+        <td>{{ rm["total_tests"] }}</td>
+        <td>{{ rm["passed"] }}</td>
+        <td>{{ rm["failed"] }}</td>
+        <td>{{ rm["fp"] }}</td>
+        <td>{{ rm["detection_rate"] }}%</td>
+        <td>{{ rm["fp_rate"] }}%</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Detection Rate Per Rule</h3>
+
+<div class="chart-box medium">
+    <canvas id="metricsChart"></canvas>
+</div>
+
+{% endblock %}
