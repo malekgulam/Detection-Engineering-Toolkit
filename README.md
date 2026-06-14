@@ -1,4 +1,4 @@
-# Detection Engineering Platform
+# Detection Engineering Toolkit
 
 A Python platform that builds detection rules, simulates attacks, and automatically validates whether each detection actually works.
 
