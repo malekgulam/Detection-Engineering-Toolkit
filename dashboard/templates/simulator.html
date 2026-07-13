@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <span class="page-title">Detection Simulator</span>
+    <span class="page-subtitle">Test detection rules against raw log lines</span>
+</div>
+
+<div class="detail-panel mb-16">
+    <div class="detail-panel-title">How It Works</div>
+    <p style="font-size:12px; color:var(--text-secondary); line-height:1.7; margin:0;">
+        Run <span class="mono text-green">python main.py</span> with a specific 
+        log line to test whether a rule fires. The pipeline executes the same 
+        ingestion, parsing, normalization, and detection logic used in production. 
+        Check the terminal output for matched conditions and evidence.
+    </p>
+</div>
+
+<div class="detail-panel mb-16">
+    <div class="detail-panel-title">Example Log Lines per Rule</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Rule ID</th>
+                <th>Rule Name</th>
+                <th>Example Log Line</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="mono text-blue">T1110-001</td>
+                <td>SSH Brute Force</td>
+                <td><pre class="evidence-block" style="padding:5px 10px;font-size:10px;margin:0;">Jan 15 14:30:05 server sshd[1201]: Failed password for invalid user admin from 192.168.1.105 port 44321 ssh2</pre></td>
+            </tr>
+            <tr>
+                <td class="mono text-blue">T1595-001</td>
+                <td>Web Scanning</td>
+                <td><pre class="evidence-block" style="padding:5px 10px;font-size:10px;margin:0;">192.168.1.105 - - [15/Jan/2024:02:15:44+0000] "GET /.env HTTP/1.1" 404 128</pre></td>
+            </tr>
+            <tr>
+                <td class="mono text-blue">T1078-001</td>
+                <td>Off-Hours Login</td>
+                <td><pre class="evidence-block" style="padding:5px 10px;font-size:10px;margin:0;">Jan 15 02:22:10 server sshd[1312]: Accepted password for john from 10.0.0.22 port 54001 ssh2</pre></td>
+            </tr>
+            <tr>
+                <td class="mono text-blue">T1059-001</td>
+                <td>Suspicious PowerShell</td>
+                <td><pre class="evidence-block" style="padding:5px 10px;font-size:10px;margin:0;">powershell.exe -EncodedCommand SQBuAHYAbwBrAGUALQBXAGUAYgBSAGUAcQB1AGUAcwB0AA==</pre></td>
+            </tr>
+            <tr>
+                <td class="mono text-blue">T1136-001</td>
+                <td>Account Creation</td>
+                <td><pre class="evidence-block" style="padding:5px 10px;font-size:10px;margin:0;">useradd -m -s /bin/bash backdoor_user</pre></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

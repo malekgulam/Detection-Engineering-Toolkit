@@ -1,52 +1,151 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Detection Metrics</h2>
+<div class="page-header">
+    <span class="page-title">Detection Metrics</span>
+    <span class="page-subtitle">Rule performance and quality analysis</span>
+</div>
 
-{% if overall %}
-<h3>Overall Performance</h3>
-<table border="1">
-    <tr><td>Total Tests</td><td>{{ overall["total_tests"] }}</td></tr>
-    <tr><td>Passed</td><td>{{ overall["passed"] }}</td></tr>
-    <tr><td>Failed</td><td>{{ overall["failed"] }}</td></tr>
-    <tr><td>False Positives</td><td>{{ overall["fp"] }}</td></tr>
-    <tr><td>Detection Rate</td><td>{{ overall["detection_rate"] }}%</td></tr>
-    <tr><td>FP Rate</td><td>{{ overall["fp_rate"] }}%</td></tr>
-    <tr><td>Last Run</td><td>{{ overall["run_at"] }}</td></tr>
-</table>
+{% if not overall %}
+<div class="empty-state">
+    No metrics yet. Run the pipeline first.
+    <div class="empty-cmd">python main.py</div>
+</div>
+{% else %}
+
+<div class="stat-strip mb-20">
+    <div class="stat-item">
+        <span class="stat-value">{{ overall["total_tests"] }}</span>
+        <span class="stat-label">Total Tests</span>
+    </div>
+    <div class="stat-item accent-green">
+        <span class="stat-value">{{ overall["detection_rate"] }}%</span>
+        <span class="stat-label">Detection Rate</span>
+    </div>
+    <div class="stat-item accent-yellow">
+        <span class="stat-value">{{ overall["fp_rate"] }}%</span>
+        <span class="stat-label">FP Rate</span>
+    </div>
+    <div class="stat-item accent-purple">
+        <span class="stat-value">{{ overall["overall_quality_score"] }}</span>
+        <span class="stat-label">Quality Score</span>
+    </div>
+    <div class="stat-item accent-red">
+        <span class="stat-value">{{ overall["failed"] }}</span>
+        <span class="stat-label">Missed Detections</span>
+    </div>
+</div>
+
+<div class="charts-row mb-20">
+    <div class="chart-panel">
+        <div class="chart-panel-title">Detection Rate per Rule</div>
+        <canvas id="detectionRateChart" height="160"></canvas>
+    </div>
+    <div class="chart-panel">
+        <div class="chart-panel-title">False Positive Rate per Rule</div>
+        <canvas id="fpRateChart" height="160"></canvas>
+    </div>
+    <div class="chart-panel">
+        <div class="chart-panel-title">Quality Score per Rule</div>
+        <canvas id="qualityScoreChart" height="160"></canvas>
+    </div>
+</div>
+
+<div class="section-header mb-12">
+    <span class="section-title">Per-Rule Breakdown</span>
+    <span class="section-count">{{ rule_metrics | length }} rule{{ 's' if rule_metrics | length != 1 else '' }}</span>
+</div>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Rule ID</th>
+                <th>Title</th>
+                <th>Severity</th>
+                <th>Total</th>
+                <th>Pass</th>
+                <th>Fail</th>
+                <th>FP</th>
+                <th>Detection Rate</th>
+                <th>FP Rate</th>
+                <th>Quality Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rm in rule_metrics %}
+            <tr>
+                <td class="mono text-blue">{{ rm["rule_id"] }}</td>
+                <td>{{ rm["title"] }}</td>
+                <td>
+                    <span class="tag tag-{{ rm['severity'] }}">{{ rm["severity"] }}</span>
+                </td>
+                <td class="mono">{{ rm["total_tests"] }}</td>
+                <td class="mono text-green">{{ rm["passed"] }}</td>
+                <td class="mono text-red">{{ rm["failed"] }}</td>
+                <td class="mono text-yellow">{{ rm["fp"] }}</td>
+                <td>
+                    <div class="quality-wrap">
+                        <div class="quality-bar">
+                            <div class="quality-fill
+                                {% if rm['detection_rate'] < 40 %}low
+                                {% elif rm['detection_rate'] < 70 %}medium
+                                {% endif %}"
+                                style="width:{{ rm['detection_rate'] }}%">
+                            </div>
+                        </div>
+                        <span class="quality-value">{{ rm["detection_rate"] }}%</span>
+                    </div>
+                </td>
+                <td class="mono
+                    {% if rm['fp_rate'] > 30 %}text-red
+                    {% elif rm['fp_rate'] > 10 %}text-yellow
+                    {% else %}text-green{% endif %}">
+                    {{ rm["fp_rate"] }}%
+                </td>
+                <td>
+                    <div class="quality-wrap">
+                        <div class="quality-bar">
+                            <div class="quality-fill
+                                {% if rm['quality_score'] < 40 %}low
+                                {% elif rm['quality_score'] < 70 %}medium
+                                {% endif %}"
+                                data-score="{{ rm['quality_score'] }}">
+                            </div>
+                        </div>
+                        <span class="quality-value">{{ rm["quality_score"] }}</span>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="detail-panel mb-16" style="border-left: 3px solid var(--accent-blue);">
+    <div class="detail-panel-title">Quality Score Formula</div>
+    <p style="font-size:12px; color:var(--text-secondary); line-height:1.7; margin-bottom:12px;">
+        Quality score is a composite metric that rewards high detection rates,
+        penalises false positives, and applies a severity bonus for rules covering
+        more serious techniques.
+    </p>
+    <pre class="evidence-block" style="color:var(--text-secondary);">
+Quality Score = (Detection Rate × 0.50) − (FP Rate × 0.30) + (Severity Bonus × 0.20)
+
+Severity Bonus:  LOW = 15 · MEDIUM = 40 · HIGH = 70 · CRITICAL = 90
+Score range:     0 – 100 (capped)
+    </pre>
+</div>
+
 {% endif %}
 
-<h3>Per Rule Breakdown</h3>
-
-<table id="metricsTable" border="1">
-    <tr>
-        <th>Rule ID</th>
-        <th>Title</th>
-        <th>Total Tests</th>
-        <th>Passed</th>
-        <th>Failed</th>
-        <th>False Positives</th>
-        <th>Detection Rate</th>
-        <th>FP Rate</th>
-    </tr>
-    {% for rm in rule_metrics %}
-    <tr>
-        <td>{{ rm["rule_id"] }}</td>
-        <td>{{ rm["title"] }}</td>
-        <td>{{ rm["total_tests"] }}</td>
-        <td>{{ rm["passed"] }}</td>
-        <td>{{ rm["failed"] }}</td>
-        <td>{{ rm["fp"] }}</td>
-        <td>{{ rm["detection_rate"] }}%</td>
-        <td>{{ rm["fp_rate"] }}%</td>
-    </tr>
-    {% endfor %}
-</table>
-
-<h3>Detection Rate Per Rule</h3>
-
-<div class="chart-box medium">
-    <canvas id="metricsChart"></canvas>
-</div>
+<script>
+{% if overall %}
+const metricsData = {
+    overall:      {{ overall | tojson }},
+    rule_metrics: {{ rule_metrics | tojson }}
+};
+{% endif %}
+</script>
 
 {% endblock %}

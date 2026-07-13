@@ -1,36 +1,87 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>ATT&CK Coverage</h2>
+<div class="page-header">
+    <span class="page-title">ATT&CK Coverage</span>
+    <span class="page-subtitle">{{ covered_count }} covered · {{ gap_count }} gaps identified</span>
+</div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-number">{{ covered_count }}</div>
-        <div class="stat-label">Techniques Covered</div>
+{% if not covered %}
+<div class="empty-state">
+    No coverage data yet. Run the pipeline first.
+    <div class="empty-cmd">python main.py</div>
+</div>
+{% else %}
+
+<div class="stat-strip mb-20">
+    <div class="stat-item accent-green">
+        <span class="stat-value">{{ covered_count }}</span>
+        <span class="stat-label">Techniques Covered</span>
+    </div>
+    <div class="stat-item accent-red">
+        <span class="stat-value">{{ gap_count }}</span>
+        <span class="stat-label">Coverage Gaps</span>
+    </div>
+    <div class="stat-item accent-blue">
+        <span class="stat-value">
+            {{ ((covered_count / (covered_count + gap_count)) * 100) | round(1) }}%
+        </span>
+        <span class="stat-label">Coverage Rate</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-value">{{ covered_count + gap_count }}</span>
+        <span class="stat-label">Techniques Tracked</span>
     </div>
 </div>
 
-<h3>Covered Techniques</h3>
+<div class="section-header mb-12">
+    <span class="section-title">Covered Techniques</span>
+    <span class="section-count">{{ covered_count }} technique{{ 's' if covered_count != 1 else '' }}</span>
+</div>
 
-<table border="1">
-    <tr>
-        <th>Technique ID</th>
-        <th>Technique Name</th>
-        <th>Tactic</th>
-        <th>Rule ID</th>
-        <th>Rule Title</th>
-        <th>Severity</th>
-    </tr>
-    {% for item in coverage_data %}
-    <tr>
-        <td>{{ item["technique_id"] }}</td>
-        <td>{{ item["technique_name"] }}</td>
-        <td>{{ item["tactic"] }}</td>
-        <td>{{ item["rule_id"] }}</td>
-        <td>{{ item["title"] }}</td>
-        <td><span class="badge {{ item['severity'] }}">{{ item["severity"] }}</span></td>
-    </tr>
-    {% endfor %}
-</table>
+{% for item in covered %}
+<div class="coverage-block mb-8">
+    <div>
+        <div class="coverage-technique">{{ item["technique_id"] }}</div>
+        <div class="coverage-name">{{ item["technique_name"] }}</div>
+        <div class="coverage-tactic">{{ item["tactic"] }}</div>
+    </div>
+    <div class="flex gap-8" style="align-items:center;">
+        <span class="mono text-muted" style="font-size:11px;">{{ item["rule_id"] }}</span>
+        <span class="tag tag-{{ item['severity'] }}">{{ item["severity"] }}</span>
+        <span class="tag" style="background:var(--pass-bg);color:var(--accent-green);border-left:2px solid var(--accent-green);">
+            COVERED
+        </span>
+    </div>
+</div>
+{% endfor %}
+
+<div class="section-header mb-12" style="margin-top:28px;">
+    <span class="section-title">Coverage Gaps</span>
+    <span class="section-count">{{ gap_count }} technique{{ 's' if gap_count != 1 else '' }} without detection</span>
+</div>
+
+<p style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.7;">
+    The following techniques are commonly observed in real-world attacks within
+    the same tactic areas your rules already cover. These represent prioritised
+    detection gaps to address in future rule development.
+</p>
+
+{% for gap in gaps %}
+<div class="gap-block mb-8">
+    <div>
+        <div class="coverage-technique">{{ gap["technique_id"] }}</div>
+        <div class="coverage-name">{{ gap["technique_name"] }}</div>
+        <div class="coverage-tactic">{{ gap["tactic"] }}</div>
+    </div>
+    <div>
+        <span class="tag" style="background:var(--fail-bg);color:var(--accent-red);border-left:2px solid var(--accent-red);">
+            NO DETECTION
+        </span>
+    </div>
+</div>
+{% endfor %}
+
+{% endif %}
 
 {% endblock %}

@@ -1,27 +1,91 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Detection Rules</h2>
+<div class="page-header">
+    <span class="page-title">Detection Rules</span>
+    <span class="page-subtitle">{{ rules | length }} rule{{ 's' if rules | length != 1 else '' }} loaded</span>
+</div>
 
-<table border="1">
-    <tr>
-        <th>Rule ID</th>
-        <th>Title</th>
-        <th>Technique</th>
-        <th>Tactic</th>
-        <th>Severity</th>
-        <th>Description</th>
-    </tr>
-    {% for rule in rules %}
-    <tr>
-        <td>{{ rule["rule_id"] }}</td>
-        <td>{{ rule["title"] }}</td>
-        <td>{{ rule["technique"] }}</td>
-        <td>{{ rule["tactic"] }}</td>
-        <td><span class="badge {{ rule['severity'] }}">{{ rule["severity"] }}</span></td>
-        <td>{{ rule["description"] }}</td>
-    </tr>
-    {% endfor %}
-</table>
+{% if not rules %}
+<div class="empty-state">
+    No rules loaded yet. Run the pipeline first.
+    <div class="empty-cmd">python main.py</div>
+</div>
+{% else %}
+
+{% for rule in rules %}
+<div class="detail-panel mb-20">
+
+    <div class="flex-between mb-12">
+        <div class="flex gap-8" style="align-items:center;">
+            <span class="mono text-blue" style="font-size:13px;">{{ rule["rule_id"] }}</span>
+            <span class="tag tag-{{ rule['severity'] }}">{{ rule["severity"] }}</span>
+            <span class="mitre-tag">{{ rule["technique"] }}</span>
+        </div>
+        <span class="text-muted" style="font-size:11px;">{{ rule["tactic"] }}</span>
+    </div>
+
+    <div style="font-size:14px; font-weight:600; color:var(--text-data); margin-bottom:16px;">
+        {{ rule["title"] }}
+    </div>
+
+    <div class="detail-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:16px;">
+
+        <div>
+            <div class="detail-panel-title">Description</div>
+            <p style="font-size:12px; color:var(--text-secondary); line-height:1.7; margin:0;">
+                {{ rule["description"] }}
+            </p>
+        </div>
+
+        <div>
+            <div class="detail-panel-title">False Positive Notes</div>
+            <p style="font-size:12px; color:var(--text-secondary); line-height:1.7; margin:0;">
+                {{ rule["false_positive_notes"] }}
+            </p>
+        </div>
+
+    </div>
+
+    <div class="detail-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:16px;">
+
+        <div>
+            <div class="detail-panel-title">Severity Rationale</div>
+            <p style="font-size:12px; color:var(--text-secondary); line-height:1.7; margin:0;">
+                {{ rule["severity_rationale"] }}
+            </p>
+        </div>
+
+        <div>
+            <div class="detail-panel-title">Author</div>
+            <p style="font-size:12px; color:var(--text-secondary); margin:0;">
+                {{ rule["author"] or "—" }}
+            </p>
+        </div>
+
+        <div>
+            <div class="detail-panel-title">Rule Type</div>
+            <p class="mono text-blue" style="margin:0;">
+                {{ rule["rule_type"] or "—" }}
+            </p>
+        </div>
+
+    </div>
+
+    {% if rule["references_list"] %}
+    <div>
+        <div class="detail-panel-title mb-8">References</div>
+        <div class="ref-list">
+            {% for ref in rule["references_list"] %}
+            <a href="{{ ref }}" target="_blank" class="ref-link">↗ {{ ref }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+{% endif %}
 
 {% endblock %}

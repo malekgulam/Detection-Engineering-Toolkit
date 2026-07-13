@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <span class="page-title">Event Timeline</span>
+    <span class="page-subtitle">{{ events | length }} event{{ 's' if events | length != 1 else '' }} from latest run</span>
+</div>
+
+{% if not events %}
+<div class="empty-state">
+    No events recorded yet. Run the pipeline first.
+    <div class="empty-cmd">python main.py</div>
+</div>
+{% else %}
+
+<div class="stat-strip mb-20">
+    <div class="stat-item">
+        <span class="stat-value">{{ events | length }}</span>
+        <span class="stat-label">Total Events</span>
+    </div>
+    <div class="stat-item accent-green">
+        <span class="stat-value">
+            {{ events | selectattr('alert') | list | length }}
+        </span>
+        <span class="stat-label">Triggered Alerts</span>
+    </div>
+    <div class="stat-item accent-red">
+        <span class="stat-value">
+            {{ events | selectattr('should_alert') | selectattr('alert', 'none') | list | length }}
+        </span>
+        <span class="stat-label">Missed Detections</span>
+    </div>
+    <div class="stat-item accent-yellow">
+        <span class="stat-value">
+            {{ events | rejectattr('should_alert') | selectattr('alert') | list | length }}
+        </span>
+        <span class="stat-label">False Positives</span>
+    </div>
+</div>
+
+<div class="flex-between mb-16">
+    <div class="flex gap-8" style="align-items:center; font-size:11px; color:var(--text-muted);">
+        <span style="display:inline-flex;align-items:center;gap:4px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--accent-green);display:inline-block;"></span>
+            Alerted
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:4px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--accent-red);display:inline-block;"></span>
+            Missed
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:4px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--accent-yellow);display:inline-block;"></span>
+            False Positive
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:4px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>
+            No Alert Expected
+        </span>
+    </div>
+</div>
+
+<div class="timeline">
+    {% for event in events %}
+
+    {% if event["alert"] %}
+        {% if event["alert"]["result"] == "PASS" %}
+            {% set dot_class = "alerted" %}
+            {% set card_class = "alerted" %}
+        {% elif event["alert"]["result"] == "FP" %}
+            {% set dot_class = "fp" %}
+            {% set card_class = "fp" %}
+        {% else %}
+            {% set dot_class = "missed" %}
+            {% set card_class = "missed" %}
+        {% endif %}
+    {% elif event["should_alert"] %}
+        {% set dot_class = "missed" %}
+        {% set card_class = "missed" %}
+    {% else %}
+        {% set dot_class = "no-alert" %}
+        {% set card_class = "" %}
+    {% endif %}
+
+    <div class="timeline-item">
+        <div class="timeline-dot {{ dot_class }}"></div>
+        <div class="timeline-card {{ card_class }}">
+
+            <div class="timeline-time">{{ event["timestamp"] }}</div>
+
+            <div class="timeline-event">
+                <span class="mono text-blue" style="font-size:11px;">{{ event["event_type"] }}</span>
+                {% if event["source_ip"] %}
+                <span class="text-muted"> from </span>
+                <span class="mono">{{ event["source_ip"] }}</span>
+                {% endif %}
+            </div>
+
+            {% if event["alert"] %}
+            <div class="timeline-meta" style="margin-top:6px;">
+                <span class="tag tag-{{ event['alert']['result'] }}" style="margin-right:6px;">
+                    {{ event["alert"]["result"] }}
+                </span>
+                <span class="text-muted">{{ event["alert"]["rule_id"] }}</span>
+                {% if event["alert"]["evidence"] %}
+                <div style="margin-top:4px; font-size:11px; color:var(--text-secondary); font-family:var(--font-ui);">
+                    {{ event["alert"]["evidence"] }}
+                </div>
+                {% endif %}
+            </div>
+            {% elif event["should_alert"] %}
+            <div class="timeline-meta" style="margin-top:6px;">
+                <span class="tag" style="background:var(--fail-bg);color:var(--accent-red);border-left:2px solid var(--accent-red);margin-right:6px;">
+                    MISSED
+                </span>
+                <span class="text-muted">expected {{ event["expected_rule"] }}</span>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% endfor %}
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -4,10 +4,18 @@
     "technique": "T1595",
     "tactic": "Reconnaissance",
     "severity": "MEDIUM",
+    "author": "Detection Engineering Team",
+    "description": "Detects repeated HTTP 404 responses from the same source IP within a short time window, indicating automated scanning of web application paths and endpoints.",
+    "references": [
+        "https://attack.mitre.org/techniques/T1595/",
+        "https://owasp.org/www-community/attacks/Forced_browsing"
+    ],
+    "false_positive_notes": "Web crawlers and search engine bots hitting broken links. Legitimate penetration testing activity. Misconfigured applications generating 404s internally. Whitelist known scanner IPs.",
+    "severity_rationale": "MEDIUM because scanning is reconnaissance only. No immediate impact but signals attacker interest and precedes exploitation attempts.",
     "event_type": "web_request",
     "status": "404",
     "threshold": 10,
     "time_window_seconds": 30,
     "cooldown_seconds": 300,
-    "description": "Detects rapid 404 requests from same IP indicating web scanning"
+    "rule_type": "web_scan"
 }

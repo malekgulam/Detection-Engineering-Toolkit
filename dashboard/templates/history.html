@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <span class="page-title">Run History</span>
+    <span class="page-subtitle">{{ runs | length }} pipeline run{{ 's' if runs | length != 1 else '' }}</span>
+</div>
+
+{% if not runs %}
+<div class="empty-state">
+    No pipeline runs recorded yet.
+    <div class="empty-cmd">python main.py</div>
+</div>
+{% else %}
+
+<div class="stat-strip mb-20">
+    <div class="stat-item">
+        <span class="stat-value">{{ runs | length }}</span>
+        <span class="stat-label">Total Runs</span>
+    </div>
+    <div class="stat-item accent-green">
+        <span class="stat-value">{{ runs[0]["detection_rate"] }}%</span>
+        <span class="stat-label">Latest Detection Rate</span>
+    </div>
+    <div class="stat-item accent-yellow">
+        <span class="stat-value">{{ runs[0]["fp_rate"] }}%</span>
+        <span class="stat-label">Latest FP Rate</span>
+    </div>
+    <div class="stat-item accent-purple">
+        <span class="stat-value">{{ runs[0]["overall_quality_score"] }}</span>
+        <span class="stat-label">Latest Quality Score</span>
+    </div>
+    <div class="stat-item
+        {% if runs[0]['detection_rate_delta'] > 0 %}accent-green
+        {% elif runs[0]['detection_rate_delta'] < 0 %}accent-red
+        {% endif %}">
+        <span class="stat-value">
+            {% if runs[0]["detection_rate_delta"] > 0 %}
+            +{{ runs[0]["detection_rate_delta"] }}%
+            {% elif runs[0]["detection_rate_delta"] < 0 %}
+            {{ runs[0]["detection_rate_delta"] }}%
+            {% else %}
+            →
+            {% endif %}
+        </span>
+        <span class="stat-label">Detection Rate Δ</span>
+    </div>
+</div>
+
+<div class="chart-panel mb-20">
+    <div class="chart-panel-title">Detection Performance Over Time</div>
+    <canvas id="trendChart" height="120"></canvas>
+</div>
+
+<div class="section-header mb-12">
+    <span class="section-title">All Runs</span>
+    <span class="section-count">newest first</span>
+</div>
+
+<div class="run-row" style="background:var(--bg-elevated);border-bottom:1px solid var(--border);border-radius:2px 2px 0 0;margin-bottom:0;">
+    <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">Run</span>
+    <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">Timestamp</span>
+    <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">Tests</span>
+    <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">Detection Rate</span>
+    <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">FP Rate</span>
+    <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">Quality Score</span>
+    <span class="text-muted" style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">Δ vs Previous</span>
+</div>
+
+{% for run in runs %}
+<div class="run-row {% if loop.first %}{% endif %}"
+     style="{% if not loop.last %}border-radius:0;{% else %}border-radius:0 0 2px 2px;{% endif %}
+            {% if loop.first %}border-left:3px solid var(--accent-blue);{% endif %}">
+
+    <div>
+        <div class="run-number">Run #{{ run["id"] }}</div>
+        {% if loop.first %}
+        <span class="tag" style="background:rgba(88,166,255,0.10);color:var(--accent-blue);border-left:2px solid var(--accent-blue);font-size:9px;">
+            LATEST
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="run-timestamp">{{ run["run_at"] }}</div>
+
+    <div class="mono" style="font-size:12px;">{{ run["total_tests"] }}</div>
+
+    <div>
+        <div class="mono" style="font-size:13px;color:var(--accent-green);">
+            {{ run["detection_rate"] }}%
+        </div>
+    </div>
+
+    <div>
+        <div class="mono" style="font-size:13px;
+            {% if run['fp_rate'] > 30 %}color:var(--accent-red);
+            {% elif run['fp_rate'] > 10 %}color:var(--accent-yellow);
+            {% else %}color:var(--accent-green);{% endif %}">
+            {{ run["fp_rate"] }}%
+        </div>
+    </div>
+
+    <div>
+        <div class="quality-wrap">
+            <div class="quality-bar">
+                <div class="quality-fill
+                    {% if run['overall_quality_score'] < 40 %}low
+                    {% elif run['overall_quality_score'] < 70 %}medium
+                    {% endif %}"
+                    data-score="{{ run['overall_quality_score'] }}">
+                </div>
+            </div>
+            <span class="quality-value">{{ run["overall_quality_score"] }}</span>
+        </div>
+    </div>
+
+    <div>
+        {% if loop.first and run["detection_rate_delta"] == 0 and run["fp_rate_delta"] == 0 %}
+        <span class="delta delta-flat">first run</span>
+        {% else %}
+        <div class="flex gap-8" style="flex-wrap:wrap;">
+            {% if run["detection_rate_delta"] > 0 %}
+            <span class="delta delta-up">DR +{{ run["detection_rate_delta"] }}%</span>
+            {% elif run["detection_rate_delta"] < 0 %}
+            <span class="delta delta-down">DR {{ run["detection_rate_delta"] }}%</span>
+            {% endif %}
+
+            {% if run["fp_rate_delta"] < 0 %}
+            <span class="delta delta-up">FP {{ run["fp_rate_delta"] }}%</span>
+            {% elif run["fp_rate_delta"] > 0 %}
+            <span class="delta delta-down">FP +{{ run["fp_rate_delta"] }}%</span>
+            {% endif %}
+
+            {% if run["quality_score_delta"] > 0 %}
+            <span class="delta delta-up">QS +{{ run["quality_score_delta"] }}</span>
+            {% elif run["quality_score_delta"] < 0 %}
+            <span class="delta delta-down">QS {{ run["quality_score_delta"] }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endfor %}
+
+{% endif %}
+
+<script>
+{% if runs %}
+fetch("/api/run-log")
+    .then(r => r.json())
+    .then(data => {
+        const historyData = data;
+        const onHistory = true;
+
+        const runs = historyData.slice().reverse();
+        const labels         = runs.map(r => "Run " + r.id);
+        const detectionRates = runs.map(r => r.detection_rate);
+        const fpRates        = runs.map(r => r.fp_rate);
+        const qualityScores  = runs.map(r => r.overall_quality_score);
+
+        const C = {
+            blue:   "#58a6ff",
+            green:  "#3fb950",
+            red:    "#f85149",
+            yellow: "#d29922",
+            muted:  "#7d8590",
+            border: "#30363d",
+            text:   "#e6edf3"
+        };
+
+        new Chart(document.getElementById("trendChart"), {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Detection Rate %",
+                        data: detectionRates,
+                        borderColor: C.green,
+                        backgroundColor: "transparent",
+                        tension: 0.3,
+                        pointBackgroundColor: C.green,
+                        pointRadius: 4
+                    },
+                    {
+                        label: "FP Rate %",
+                        data: fpRates,
+                        borderColor: C.yellow,
+                        backgroundColor: "transparent",
+                        tension: 0.3,
+                        pointBackgroundColor: C.yellow,
+                        pointRadius: 4
+                    },
+                    {
+                        label: "Quality Score",
+                        data: qualityScores,
+                        borderColor: C.blue,
+                        backgroundColor: "transparent",
+                        tension: 0.3,
+                        pointBackgroundColor: C.blue,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: "bottom",
+                        labels: {
+                            color: C.muted,
+                            font: { family: "'Inter', sans-serif", size: 10 },
+                            padding: 10,
+                            boxWidth: 10
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: "Detection Performance Over Time",
+                        color: C.muted,
+                        font: { family: "'Inter', sans-serif", size: 11, weight: "500" },
+                        padding: { bottom: 10 }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: C.border, drawBorder: false },
+                        ticks: {
+                            color: C.muted,
+                            font: { family: "'JetBrains Mono', monospace", size: 10 }
+                        },
+                        border: { color: C.border }
+                    },
+                    y: {
+                        grid: { color: C.border, drawBorder: false },
+                        ticks: {
+                            color: C.muted,
+                            font: { family: "'JetBrains Mono', monospace", size: 10 }
+                        },
+                        border: { display: false },
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+    });
+{% endif %}
+</script>
+
+{% endblock %}

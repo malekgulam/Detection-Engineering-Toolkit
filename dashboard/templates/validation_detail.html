@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a href="{{ url_for('validation') }}" class="back-link">← Back to Validation</a>
+
+<div class="page-header">
+    <span class="page-title">{{ result["title"] }}</span>
+    <div class="flex gap-8">
+        <span class="tag tag-{{ result['result'] }}">{{ result["result"] }}</span>
+        <span class="tag tag-{{ result['severity'] }}">{{ result["severity"] }}</span>
+    </div>
+</div>
+
+<div class="detail-grid">
+
+    <div class="detail-panel">
+        <div class="detail-panel-title">Detection Info</div>
+        <table class="kv-table">
+            <tr>
+                <td>Rule ID</td>
+                <td class="mono text-blue">{{ result["rule_id"] }}</td>
+            </tr>
+            <tr>
+                <td>Technique</td>
+                <td><span class="mitre-tag">{{ result["technique"] }}</span></td>
+            </tr>
+            <tr>
+                <td>Tactic</td>
+                <td class="text-muted">{{ result["tactic"] or "—" }}</td>
+            </tr>
+            <tr>
+                <td>Validated At</td>
+                <td class="mono text-muted">{{ result["validated_at"] }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="detail-panel">
+        <div class="detail-panel-title">Source Info</div>
+        <table class="kv-table">
+            <tr>
+                <td>Source IP</td>
+                <td class="mono">{{ result["source_ip"] or "—" }}</td>
+            </tr>
+            <tr>
+                <td>Timestamp</td>
+                <td class="mono text-muted">{{ result["timestamp"] }}</td>
+            </tr>
+            <tr>
+                <td>Should Alert</td>
+                <td>
+                    {% if result["should_alert"] %}
+                    <span class="text-green mono">yes</span>
+                    {% else %}
+                    <span class="text-muted mono">no</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="detail-panel
+        {% if result['result'] == 'PASS' %}accent-green
+        {% elif result['result'] == 'FAIL' %}accent-red
+        {% else %}accent-left{% endif %}">
+        <div class="detail-panel-title">Validation Result</div>
+        <table class="kv-table">
+            <tr>
+                <td>Result</td>
+                <td><span class="tag tag-{{ result['result'] }}">{{ result["result"] }}</span></td>
+            </tr>
+            <tr>
+                <td>Expected Rule</td>
+                <td class="mono text-muted">{{ result["expected_rule"] }}</td>
+            </tr>
+            <tr>
+                <td>Actual Rule</td>
+                <td class="mono
+                    {% if result['actual_rule'] == result['expected_rule'] %}text-green
+                    {% elif result['actual_rule'] == 'NONE' %}text-red
+                    {% else %}text-yellow{% endif %}">
+                    {{ result["actual_rule"] }}
+                </td>
+            </tr>
+            <tr>
+                <td>Matched On</td>
+                <td class="mono text-muted">{{ result["matched_condition"] or "—" }}</td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+
+{% if result["matched_value"] or result["evidence"] %}
+<div class="detail-panel span-full mb-16">
+    <div class="detail-panel-title">Rule Explainability</div>
+
+    {% if result["matched_value"] %}
+    <div class="mb-12">
+        <div class="text-muted mb-8" style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+            Matched Value
+        </div>
+        <pre class="evidence-block">{{ result["matched_value"] }}</pre>
+    </div>
+    {% endif %}
+
+    {% if result["evidence"] %}
+    <div>
+        <div class="text-muted mb-8" style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">
+            Evidence
+        </div>
+        <pre class="evidence-block">{{ result["evidence"] }}</pre>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if result["result"] == "FAIL" and result["actual_rule"] == "NONE" %}
+<div class="detail-panel span-full mb-16" style="border-left: 3px solid var(--accent-red);">
+    <div class="detail-panel-title">Missed Detection Analysis</div>
+    <p style="font-size:12px; color:var(--text-secondary); line-height:1.7; margin:0;">
+        This event was expected to trigger rule
+        <span class="mono text-blue">{{ result["expected_rule"] }}</span>
+        but no alert fired. Possible reasons include the event volume not meeting
+        the detection threshold, the event timestamp falling outside the detection
+        time window, or the event type not matching the rule condition. Review the
+        rule configuration and simulator to diagnose the missed detection.
+    </p>
+    <div style="margin-top: 12px;">
+        <a href="{{ url_for('simulator') }}" class="btn btn-ghost btn-sm">
+            ↗ Open Simulator
+        </a>
+    </div>
+</div>
+{% elif result["result"] == "FP" %}
+<div class="detail-panel span-full mb-16" style="border-left: 3px solid var(--accent-yellow);">
+    <div class="detail-panel-title">False Positive Analysis</div>
+    <p style="font-size:12px; color:var(--text-secondary); line-height:1.7; margin:0;">
+        This alert fired but
+        <span class="mono text-muted">should_alert</span>
+        was marked
+        <span class="mono text-yellow">false</span>
+        for this event. The detection rule triggered on benign activity.
+        Review the rule threshold, time window, or add exclusion conditions
+        to reduce false positives for this pattern.
+    </p>
+</div>
+{% endif %}
+
+<a href="{{ url_for('validation') }}" class="back-link">← Back to Validation</a>
+
+{% endblock %}

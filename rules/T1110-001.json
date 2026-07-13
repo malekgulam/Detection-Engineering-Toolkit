@@ -4,9 +4,17 @@
     "technique": "T1110",
     "tactic": "Credential Access",
     "severity": "HIGH",
+    "author": "Detection Engineering Team",
+    "description": "Detects multiple failed SSH login attempts from the same source IP within a short time window, indicating automated credential guessing activity.",
+    "references": [
+        "https://attack.mitre.org/techniques/T1110/001/",
+        "https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-008a"
+    ],
+    "false_positive_notes": "Legitimate users who mistype passwords repeatedly. Automated backup or monitoring systems using incorrect credentials. Rate limit to reduce noise from misconfigured internal systems.",
+    "severity_rationale": "HIGH because successful brute force leads directly to unauthorized access. Attack is automated and fast once started.",
     "event_type": "failed_login",
     "threshold": 5,
     "time_window_seconds": 60,
     "cooldown_seconds": 300,
-    "description": "Detects multiple failed login attempts from same IP within time window"
+    "rule_type": "brute_force"
 }

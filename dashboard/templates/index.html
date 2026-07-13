@@ -1,58 +1,160 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Platform Overview</h2>
+<div class="page-header">
+    <span class="page-title">Overview</span>
+    <span class="page-subtitle">
+        {% if overall %}
+        Last run {{ overall["run_at"] }}
+        {% else %}
+        No pipeline run yet
+        {% endif %}
+    </span>
+</div>
 
-{% if overall %}
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-number">{{ overall["total_tests"] }}</div>
-        <div class="stat-label">Total Tests</div>
+{% if not overall %}
+<div class="empty-state">
+    No data yet. Run the pipeline first.
+    <div class="empty-cmd">python main.py</div>
+</div>
+{% else %}
+
+<div class="stat-strip mb-20">
+    <div class="stat-item">
+        <span class="stat-value">{{ overall["total_tests"] }}</span>
+        <span class="stat-label">Total Tests</span>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ overall["passed"] }}</div>
-        <div class="stat-label">Passed</div>
+    <div class="stat-item accent-green">
+        <span class="stat-value">{{ overall["passed"] }}</span>
+        <span class="stat-label">Passed</span>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ overall["failed"] }}</div>
-        <div class="stat-label">Failed</div>
+    <div class="stat-item accent-red">
+        <span class="stat-value">{{ overall["failed"] }}</span>
+        <span class="stat-label">Failed</span>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ overall["detection_rate"] }}%</div>
-        <div class="stat-label">Detection Rate</div>
+    <div class="stat-item accent-yellow">
+        <span class="stat-value">{{ overall["fp"] }}</span>
+        <span class="stat-label">False Positives</span>
+    </div>
+    <div class="stat-item accent-blue">
+        <span class="stat-value">{{ overall["detection_rate"] }}%</span>
+        <span class="stat-label">Detection Rate</span>
+    </div>
+    <div class="stat-item accent-purple">
+        <span class="stat-value">{{ overall["overall_quality_score"] }}</span>
+        <span class="stat-label">Quality Score</span>
     </div>
 </div>
 
-<h3>Last Run</h3>
-<p>{{ overall["run_at"] }}</p>
-
-{% else %}
-<p>No data yet. Run main.py first.</p>
+{% if latest_run and latest_run["detection_rate_delta"] != 0 %}
+<div class="detail-panel mb-20" style="padding: 10px 16px;">
+    <div class="flex-between">
+        <span class="text-muted" style="font-size:11px;">Compared to previous run</span>
+        <div class="flex gap-8">
+            <span>
+                Detection Rate
+                {% if latest_run["detection_rate_delta"] > 0 %}
+                <span class="delta delta-up">+{{ latest_run["detection_rate_delta"] }}%</span>
+                {% elif latest_run["detection_rate_delta"] < 0 %}
+                <span class="delta delta-down">{{ latest_run["detection_rate_delta"] }}%</span>
+                {% else %}
+                <span class="delta delta-flat">→</span>
+                {% endif %}
+            </span>
+            <span>
+                FP Rate
+                {% if latest_run["fp_rate_delta"] < 0 %}
+                <span class="delta delta-up">{{ latest_run["fp_rate_delta"] }}%</span>
+                {% elif latest_run["fp_rate_delta"] > 0 %}
+                <span class="delta delta-down">+{{ latest_run["fp_rate_delta"] }}%</span>
+                {% else %}
+                <span class="delta delta-flat">→</span>
+                {% endif %}
+            </span>
+            <span>
+                Quality Score
+                {% if latest_run["quality_score_delta"] > 0 %}
+                <span class="delta delta-up">+{{ latest_run["quality_score_delta"] }}</span>
+                {% elif latest_run["quality_score_delta"] < 0 %}
+                <span class="delta delta-down">{{ latest_run["quality_score_delta"] }}</span>
+                {% else %}
+                <span class="delta delta-flat">→</span>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
 {% endif %}
 
-<h3>Rule Performance</h3>
+<div class="charts-row mb-20">
+    <div class="chart-panel">
+        <div class="chart-panel-title">Results by Rule</div>
+        <canvas id="ruleResultChart" height="160"></canvas>
+    </div>
+    <div class="chart-panel">
+        <div class="chart-panel-title">Overall Results</div>
+        <canvas id="overallResultChart" height="160"></canvas>
+    </div>
+    <div class="chart-panel">
+        <div class="chart-panel-title">Quality Score</div>
+        <canvas id="qualityChart" height="160"></canvas>
+    </div>
+</div>
 
-{% if rule_metrics %}
-<table border="1">
-    <tr>
-        <th>Rule ID</th>
-        <th>Title</th>
-        <th>Total Tests</th>
-        <th>Passed</th>
-        <th>Failed</th>
-        <th>Detection Rate</th>
-    </tr>
-    {% for rm in rule_metrics %}
-    <tr>
-        <td>{{ rm["rule_id"] }}</td>
-        <td>{{ rm["title"] }}</td>
-        <td>{{ rm["total_tests"] }}</td>
-        <td>{{ rm["passed"] }}</td>
-        <td>{{ rm["failed"] }}</td>
-        <td>{{ rm["detection_rate"] }}%</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="section-header mb-12">
+    <span class="section-title">Rule Summary</span>
+    <span class="section-count">{{ rule_metrics | length }} rules</span>
+</div>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Rule ID</th>
+                <th>Title</th>
+                <th>Severity</th>
+                <th>Total</th>
+                <th>Pass</th>
+                <th>Fail</th>
+                <th>FP</th>
+                <th>Detection Rate</th>
+                <th>Quality Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rm in rule_metrics %}
+            <tr>
+                <td class="mono text-blue">{{ rm["rule_id"] }}</td>
+                <td>{{ rm["title"] }}</td>
+                <td><span class="tag tag-{{ rm['severity'] }}">{{ rm["severity"] }}</span></td>
+                <td class="mono">{{ rm["total_tests"] }}</td>
+                <td class="mono text-green">{{ rm["passed"] }}</td>
+                <td class="mono text-red">{{ rm["failed"] }}</td>
+                <td class="mono text-yellow">{{ rm["fp"] }}</td>
+                <td class="mono">{{ rm["detection_rate"] }}%</td>
+                <td>
+                    <div class="quality-wrap">
+                        <div class="quality-bar">
+                            <div class="quality-fill" data-score="{{ rm['quality_score'] }}"></div>
+                        </div>
+                        <span class="quality-value">{{ rm["quality_score"] }}</span>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endif %}
+
+<script>
+{% if overall %}
+const indexData = {
+    overall:      {{ overall | tojson }},
+    rule_metrics: {{ rule_metrics | tojson }}
+};
+{% endif %}
+</script>
 
 {% endblock %}

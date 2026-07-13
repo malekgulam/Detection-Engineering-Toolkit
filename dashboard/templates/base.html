@@ -1,29 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detection Engineering Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-title">Detection Engineering<br>Platform</div>
-        <div class="sidebar-links">
-            <a href="/"          {% if request.path == "/"           %}class="active"{% endif %}>Overview</a>
-            <a href="/rules"     {% if request.path == "/rules"      %}class="active"{% endif %}>Rules</a>
-            <a href="/validation"{% if request.path == "/validation" %}class="active"{% endif %}>Validation</a>
-            <a href="/coverage"  {% if request.path == "/coverage"   %}class="active"{% endif %}>Coverage</a>
-            <a href="/metrics"   {% if request.path == "/metrics"    %}class="active"{% endif %}>Metrics</a>
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">⬡</span>
+            <span class="brand-name">Detection Engineering</span>
         </div>
-    </div>
 
-    <div class="main">
-        {% block content %}{% endblock %}
-    </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Platform</div>
+            <a href="{{ url_for('index') }}"
+               class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+                <span class="nav-icon">▦</span> Overview
+            </a>
+            <a href="{{ url_for('rules') }}"
+               class="nav-item {% if request.endpoint == 'rules' %}active{% endif %}">
+                <span class="nav-icon">≡</span> Rules
+            </a>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+            <div class="nav-section-label">Analysis</div>
+            <a href="{{ url_for('validation') }}"
+               class="nav-item {% if request.endpoint in ['validation', 'validation_detail'] %}active{% endif %}">
+                <span class="nav-icon">✓</span> Validation
+            </a>
+            <a href="{{ url_for('coverage') }}"
+               class="nav-item {% if request.endpoint == 'coverage' %}active{% endif %}">
+                <span class="nav-icon">▣</span> Coverage
+            </a>
+            <a href="{{ url_for('timeline') }}"
+               class="nav-item {% if request.endpoint == 'timeline' %}active{% endif %}">
+                <span class="nav-icon">⋮</span> Timeline
+            </a>
 
+            <div class="nav-section-label">Performance</div>
+            <a href="{{ url_for('metrics') }}"
+               class="nav-item {% if request.endpoint == 'metrics' %}active{% endif %}">
+                <span class="nav-icon">◈</span> Metrics
+            </a>
+            <a href="{{ url_for('history') }}"
+               class="nav-item {% if request.endpoint == 'history' %}active{% endif %}">
+                <span class="nav-icon">↺</span> History
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-label">Run pipeline to refresh</div>
+            <div class="sidebar-footer-cmd">python main.py</div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 </body>
 </html>

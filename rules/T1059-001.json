@@ -1,10 +1,18 @@
 {
     "rule_id": "T1059-001",
-    "title": "Suspicious PowerShell",
+    "title": "Suspicious PowerShell Execution",
     "technique": "T1059",
     "tactic": "Execution",
     "severity": "HIGH",
+    "author": "Detection Engineering Team",
+    "description": "Detects PowerShell execution containing encoded commands, execution policy bypass flags, or download cradles. These patterns are heavily abused by malware, ransomware, and post-exploitation frameworks.",
+    "references": [
+        "https://attack.mitre.org/techniques/T1059/001/",
+        "https://www.microsoft.com/en-us/security/blog/2019/09/03/hunting-for-encoded-powershell/"
+    ],
+    "false_positive_notes": "Legitimate administrative scripts using encoded commands for special characters. Software installers temporarily bypassing execution policy. Document all approved encoded scripts and suppress by script hash.",
+    "severity_rationale": "HIGH because PowerShell abuse is the most common post-exploitation technique. Encoded commands almost always indicate intent to evade detection.",
     "event_type": "powershell_execution",
     "suspicious_keywords": ["encoded", "bypass", "hidden", "downloadstring", "invoke-expression"],
-    "description": "Detects PowerShell execution with suspicious flags or encoded commands"
+    "rule_type": "powershell"
 }

@@ -1,65 +1,133 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Validation Results</h2>
+<div class="page-header">
+    <span class="page-title">Validation Results</span>
+    <span class="page-subtitle">{{ results | length }} result{{ 's' if results | length != 1 else '' }}</span>
+</div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-number">{{ results | length }}</div>
-        <div class="stat-label">Total Results</div>
+{% if not results %}
+<div class="empty-state">
+    No validation results yet. Run the pipeline first.
+    <div class="empty-cmd">python main.py</div>
+</div>
+{% else %}
+
+<div class="stat-strip mb-20">
+    <div class="stat-item accent-green">
+        <span class="stat-value">{{ passed | length }}</span>
+        <span class="stat-label">PASS</span>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ results | selectattr("result", "equalto", "PASS") | list | length }}</div>
-        <div class="stat-label">Passed</div>
+    <div class="stat-item accent-red">
+        <span class="stat-value">{{ failed | length }}</span>
+        <span class="stat-label">FAIL</span>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ results | selectattr("result", "equalto", "FAIL") | list | length }}</div>
-        <div class="stat-label">Failed</div>
+    <div class="stat-item accent-yellow">
+        <span class="stat-value">{{ fp | length }}</span>
+        <span class="stat-label">False Positive</span>
     </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ results | selectattr("result", "equalto", "FP") | list | length }}</div>
-        <div class="stat-label">False Positives</div>
+    <div class="stat-item accent-blue">
+        <span class="stat-value">
+            {% if results | length > 0 %}
+            {{ ((passed | length) / (results | length) * 100) | round(1) }}%
+            {% else %}
+            0%
+            {% endif %}
+        </span>
+        <span class="stat-label">Detection Rate</span>
     </div>
 </div>
+
+<div class="filter-bar mb-12">
+    <input type="text" id="searchInput" placeholder="Search rule ID, IP, technique...">
+    <select id="filterResult">
+        <option value="">All Results</option>
+        <option value="PASS">PASS</option>
+        <option value="FAIL">FAIL</option>
+        <option value="FP">FP</option>
+    </select>
+    <select id="filterSeverity">
+        <option value="">All Severities</option>
+        <option value="HIGH">HIGH</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="LOW">LOW</option>
+    </select>
+</div>
+
+<div class="data-table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Rule ID</th>
+                <th>Title</th>
+                <th>Technique</th>
+                <th>Severity</th>
+                <th>Source IP</th>
+                <th>Timestamp</th>
+                <th>Matched</th>
+                <th>Evidence</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in results %}
+            {% set detail_url = url_for('validation_detail', result_id=r['id']) %}
+            <tr class="clickable result-row"
+                onclick="window.location='{{ detail_url }}';"
+                data-result="{{ r['result'] }}"
+                data-severity="{{ r['severity'] }}"
+                data-rule="{{ r['rule_id'] }}"
+                data-ip="{{ r['source_ip'] or '' }}"
+                data-tech="{{ r['technique'] }}">
+                <td class="mono text-blue">{{ r["rule_id"] }}</td>
+                <td>{{ r["title"] }}</td>
+                <td><span class="mitre-tag">{{ r["technique"] }}</span></td>
+                <td><span class="tag tag-{{ r['severity'] }}">{{ r["severity"] }}</span></td>
+                <td class="mono">{{ r["source_ip"] or "-" }}</td>
+                <td class="mono text-muted">{{ r["timestamp"] }}</td>
+                <td class="mono text-muted" style="font-size:10px;">
+                    {{ r["matched_condition"] or "-" }}
+                </td>
+                <td style="max-width:220px; font-size:11px; color:var(--text-secondary);">
+                    {{ r["evidence"] or "-" }}
+                </td>
+                <td><span class="tag tag-{{ r['result'] }}">{{ r["result"] }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endif %}
 
 <script>
-    window.validationData = {
-        labels: {{ results | map(attribute="rule_id") | list | tojson }},
-        results: {{ results | map(attribute="result") | list | tojson }}
-    };
+const searchInput    = document.getElementById("searchInput");
+const filterResult   = document.getElementById("filterResult");
+const filterSeverity = document.getElementById("filterSeverity");
+const resultRows     = document.querySelectorAll(".result-row");
+
+function filterTable() {
+    const query    = searchInput    ? searchInput.value.toLowerCase()    : "";
+    const result   = filterResult   ? filterResult.value                 : "";
+    const severity = filterSeverity ? filterSeverity.value               : "";
+
+    resultRows.forEach(row => {
+        const matchQuery =
+            query === "" ||
+            row.dataset.rule.toLowerCase().includes(query) ||
+            row.dataset.ip.toLowerCase().includes(query)   ||
+            row.dataset.tech.toLowerCase().includes(query);
+
+        const matchResult   = result   === "" || row.dataset.result   === result;
+        const matchSeverity = severity === "" || row.dataset.severity === severity;
+
+        row.style.display = (matchQuery && matchResult && matchSeverity) ? "" : "none";
+    });
+}
+
+if (searchInput)    searchInput.addEventListener("input", filterTable);
+if (filterResult)   filterResult.addEventListener("change", filterTable);
+if (filterSeverity) filterSeverity.addEventListener("change", filterTable);
 </script>
-
-<div class="chart-box medium">
-    <canvas id="validationChart"></canvas>
-</div>
-
-<h3>Result Breakdown</h3>
-
-<table border="1">
-    <tr>
-        <th>Rule ID</th>
-        <th>Title</th>
-        <th>Technique</th>
-        <th>Source IP</th>
-        <th>Severity</th>
-        <th>Expected</th>
-        <th>Actual</th>
-        <th>Result</th>
-        <th>Validated At</th>
-    </tr>
-    {% for r in results %}
-    <tr>
-        <td>{{ r["rule_id"] }}</td>
-        <td>{{ r["title"] }}</td>
-        <td>{{ r["technique"] }}</td>
-        <td>{{ r["source_ip"] }}</td>
-        <td><span class="badge {{ r['severity'] }}">{{ r["severity"] }}</span></td>
-        <td>{{ r["expected_rule"] }}</td>
-        <td>{{ r["actual_rule"] }}</td>
-        <td><span class="badge {{ r['result'] }}">{{ r["result"] }}</span></td>
-        <td>{{ r["validated_at"] }}</td>
-    </tr>
-    {% endfor %}
-</table>
 
 {% endblock %}

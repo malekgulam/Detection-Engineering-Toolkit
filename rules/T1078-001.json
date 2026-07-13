@@ -1,10 +1,18 @@
 {
     "rule_id": "T1078-001",
-    "title": "Off Hours Login",
+    "title": "Off-Hours Login",
     "technique": "T1078",
     "tactic": "Defense Evasion",
     "severity": "MEDIUM",
+    "author": "Detection Engineering Team",
+    "description": "Detects successful authentication events occurring between midnight and 05:00, outside normal business hours. Adversaries use valid credentials during off-hours to reduce detection likelihood.",
+    "references": [
+        "https://attack.mitre.org/techniques/T1078/",
+        "https://www.cisa.gov/news-events/cybersecurity-advisories/aa20-245a"
+    ],
+    "false_positive_notes": "Legitimate remote workers in different time zones. Scheduled automated tasks running as user accounts. On-call engineers responding to incidents. Tune by user role and known timezone.",
+    "severity_rationale": "MEDIUM because the credential itself is valid. Suspicious timing alone does not confirm malicious intent but warrants investigation.",
     "event_type": "successful_login",
     "time_condition": "00:00-05:00",
-    "description": "Detects successful logins during off hours window"
+    "rule_type": "off_hours"
 }

@@ -1,9 +1,17 @@
 {
     "rule_id": "T1136-001",
-    "title": "Suspicious Account Creation",
+    "title": "Suspicious Local Account Creation",
     "technique": "T1136",
     "tactic": "Persistence",
     "severity": "HIGH",
-    "event_type": "user_creation",
-    "description": "Detects creation of new user accounts"
+    "author": "Detection Engineering Team",
+    "description": "Detects creation of new local user accounts which may indicate an adversary establishing persistence by creating backdoor accounts for future access.",
+    "references": [
+        "https://attack.mitre.org/techniques/T1136/001/",
+        "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4720"
+    ],
+    "false_positive_notes": "Legitimate IT provisioning of new employee accounts. Automated account creation by deployment scripts. Correlate with change management tickets to reduce noise.",
+    "severity_rationale": "HIGH because account creation establishes persistent access. Backdoor accounts survive reboots, patch cycles, and password resets on other accounts.",
+    "event_type": "account_creation",
+    "rule_type": "account_creation"
 }
