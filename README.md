@@ -202,6 +202,12 @@ Update Run Log with Deltas
 
 ---
 
+## Architecture
+
+![Architecture](architecture/architecture.png)
+
+---
+
 ## Technology Stack
 
 - Python 3.10+, Flask, SQLite3
