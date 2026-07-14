@@ -12,7 +12,7 @@ def generate_account_creation_events():
 
     for i in range(3):
         events.append({
-            "event_type": "user_creation",
+            "event_type": "account_creation",
             "source_ip": attacker_ip,
             "username": random.choice(["backupadmin", "svc_support", "tempadmin"]),
             "timestamp": current_time.strftime("%b %d %H:%M:%S"),
@@ -24,12 +24,12 @@ def generate_account_creation_events():
     for i in range(2):
         normal_ip = random.choice(NORMAL_IPS)
         events.append({
-            "event_type": "user_creation",
+            "event_type": "account_creation",
             "source_ip": normal_ip,
             "username": random.choice(["newhire1", "intern1", "contractor1"]),
             "timestamp": current_time.strftime("%b %d %H:%M:%S"),
             "expected_rule": "T1136-001",
-            "should_alert": True
+            "should_alert": False
         })
         current_time += timedelta(seconds=random.randint(120, 300))
 
